@@ -10,22 +10,20 @@ const getExtension = () => {
 	}
 };
 
-const getLatestRelease = ext =>
-	fetch('https://api.github.com/repos/sindresorhus/caprine/releases/latest')
-		.then(res => res.json())
-		.then(json => {
-			const asset = json.assets.filter(asset => asset.name.includes(ext));
-			return {
-				url: asset[0].browser_download_url,
-				version: json.tag_name
-			};
-		});
+const getLatestRelease = async ext => {
+	const response = await fetch('https://api.github.com/repos/sindresorhus/caprine/releases/latest');
+	const json = await response.json();
+	const asset = json.assets.filter(asset => asset.name.includes(ext));
+	return {
+		url: asset[0].browser_download_url,
+		version: json.tag_name
+	};
+};
 
-const updateButtonUrl = () => {
-	getLatestRelease(getExtension()).then(({url, version}) => {
-		document.getElementById('download-button').href = url;
-		document.getElementById('version-text').textContent = version;
-	});
-}
+const updateButtonUrl = async () => {
+	const {version, url} = await getLatestRelease(getExtension());
+	document.querySelector('#version-text').textContent = version;
+	document.querySelector('#download-button').href = url;
+};
 
 updateButtonUrl();

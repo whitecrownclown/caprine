@@ -70,8 +70,17 @@
 				width: 60%;
 			}
 
+			#caprine-title {
+				position: relative;
+				margin-bottom: 30px;
+			}
+
 			#version-text {
-				margin-left: 4px;
+				position: absolute;
+				left: 0;
+				right: 0;
+				bottom: -15px;
+				text-align: center;
 				font-size: 12px;
 			}
 
@@ -106,8 +115,9 @@
 			<div class="hero-body">
 				<div id="caprine-body" class="container">
 					<img class="caprine-icon" src="images/Icon.png" alt="Caprine">
-					<h1 class="title main-title is-spaced">
-						<strong>Caprine</strong><span id="version-text"></span>
+					<h1 id="caprine-title" class="title main-title is-spaced">
+						<strong>Caprine</strong>
+						<span id="version-text"></span>
 					</h1>
 					<h2 class="subtitle">An elegant Facebook Messenger desktop app</h2>
 					<a id="download-button" class="button is-info is-outlined is-large" href="https://github.com/sindresorhus/caprine/releases/latest">Download</a>
