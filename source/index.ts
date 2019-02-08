@@ -23,6 +23,7 @@ import electronContextMenu from 'electron-context-menu';
 import isDev from 'electron-is-dev';
 import electronDebug from 'electron-debug';
 import {darkMode, is} from 'electron-util';
+import {getDoNotDisturb} from 'electron-notification-state';
 import {bestFacebookLocaleFor} from 'facebook-locales';
 import updateAppMenu from './menu';
 import config from './config';
@@ -80,7 +81,7 @@ app.on('second-instance', () => {
 	}
 });
 
-function updateBadge(conversations: Conversation[]): void {
+async function updateBadge(conversations: Conversation[]): Promise<void> {
 	// Ignore `Sindre messaged you` blinking
 	if (!Array.isArray(conversations)) {
 		return;
@@ -93,9 +94,13 @@ function updateBadge(conversations: Conversation[]): void {
 			app.setBadgeCount(messageCount);
 		}
 
-		if (is.macos && config.get('bounceDockOnMessage') && prevMessageCount !== messageCount) {
-			app.dock.bounce('informational');
-			prevMessageCount = messageCount;
+		if (is.macos) {
+			const isDNDEnabled = await getDoNotDisturb();
+
+			if (!isDNDEnabled && config.get('bounceDockOnMessage') && prevMessageCount !== messageCount) {
+				app.dock.bounce('informational');
+				prevMessageCount = messageCount;
+			}
 		}
 	}
 
@@ -326,7 +331,7 @@ function createMainWindow(): BrowserWindow {
 
 	const {webContents} = mainWindow;
 
-	webContents.on('dom-ready', () => {
+	webContents.on('dom-ready', async () => {
 		webContents.insertCSS(readFileSync(path.join(__dirname, '..', 'css', 'browser.css'), 'utf8'));
 		webContents.insertCSS(readFileSync(path.join(__dirname, '..', 'css', 'dark-mode.css'), 'utf8'));
 		webContents.insertCSS(readFileSync(path.join(__dirname, '..', 'css', 'vibrancy.css'), 'utf8'));
@@ -350,7 +355,11 @@ function createMainWindow(): BrowserWindow {
 			mainWindow.show();
 		}
 
-		webContents.send('toggle-mute-notifications', config.get('notificationsMuted'));
+		const isDNDEnabled = await getDoNotDisturb();
+
+		webContents.send('toggle-sounds', !isDNDEnabled);
+		webContents.send('toggle-mute-notifications', config.get('notificationsMuted') || isDNDEnabled);
+
 		webContents.send('toggle-message-buttons', config.get('showMessageButtons'));
 
 		webContents.executeJavaScript(
