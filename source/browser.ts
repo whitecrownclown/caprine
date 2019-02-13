@@ -21,9 +21,7 @@ async function withMenu(
 	menuButtonElement.click();
 
 	// Wait for the menu to close before removing the 'hide-dropdowns' class
-	const menuLayer = document.querySelector<HTMLElement>(
-		'.uiContextualLayerPositioner:not(.hidden_elem)'
-	)!;
+	const menuLayer = await elementReady('.uiContextualLayerPositioner:not(.hidden_elem)');
 
 	const observer = new MutationObserver(() => {
 		if (menuLayer.classList.contains('hidden_elem')) {
