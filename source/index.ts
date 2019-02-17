@@ -8,6 +8,7 @@ import {
 	screen as electronScreen,
 	session,
 	shell,
+	powerMonitor,
 	BrowserWindow,
 	Menu,
 	Notification,
@@ -278,6 +279,12 @@ function createMainWindow(): BrowserWindow {
 
 (async () => {
 	await app.whenReady();
+
+	powerMonitor.on('on-battery', () => {
+		config.set('hardwareAcceleration', false);
+		app.relaunch();
+		app.quit();
+	});
 
 	const trackingUrlPrefix = `https://l.${domain}/l.php`;
 
