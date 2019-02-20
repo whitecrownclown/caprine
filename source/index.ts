@@ -32,6 +32,8 @@ import {process as processEmojiUrl} from './emoji';
 import ensureOnline from './ensure-online';
 import './touch-bar'; // eslint-disable-line import/no-unassigned-import
 
+ipcMain.setMaxListeners(100);
+
 electronDebug({
 	enabled: true, // TODO: This is only enabled to allow `Command+R` because messenger sometimes gets stuck after computer waking up
 	showDevTools: false
@@ -58,7 +60,10 @@ if (!isDev) {
 	autoUpdater.logger = log;
 
 	const FOUR_HOURS = 1000 * 60 * 60 * 4;
-	setInterval(() => autoUpdater.checkForUpdates(), FOUR_HOURS);
+	setInterval(() => {
+		autoUpdater.checkForUpdates();
+	}, FOUR_HOURS);
+
 	autoUpdater.checkForUpdates();
 }
 
@@ -169,18 +174,22 @@ function initRequestsFiltering(): void {
 		urls: [
 			`*://*.${domain}/*typ.php*`, // Type indicator blocker
 			`*://*.${domain}/*change_read_status.php*`, // Seen indicator blocker
+			`*://*.${domain}/*delivery_receipts*`, // Delivery receipts indicator blocker
+			`*://*.${domain}/*unread_threads*`, // Delivery receipts indicator blocker
 			'*://*.fbcdn.net/images/emoji.php/v9/*', // Emoji
 			'*://*.facebook.com/images/emoji.php/v9/*' // Emoji
 		]
 	};
 
-	session.defaultSession!.webRequest.onBeforeRequest(filter, ({url}, callback) => {
+	session.defaultSession!.webRequest.onBeforeRequest(filter, async ({url}, callback) => {
 		if (url.includes('emoji.php')) {
-			callback(processEmojiUrl(url));
+			callback(await processEmojiUrl(url));
 		} else if (url.includes('typ.php')) {
 			callback({cancel: config.get('block.typingIndicator')});
 		} else if (url.includes('change_read_status.php')) {
 			callback({cancel: config.get('block.chatSeen')});
+		} else if (url.includes('delivery_receipts') || url.includes('unread_threads')) {
+			callback({cancel: config.get('block.deliveryReceipt')});
 		}
 	});
 }
@@ -282,7 +291,7 @@ function createMainWindow(): BrowserWindow {
 
 	const trackingUrlPrefix = `https://l.${domain}/l.php`;
 
-	updateAppMenu();
+	await updateAppMenu();
 	mainWindow = createMainWindow();
 	tray.create(mainWindow);
 
@@ -327,7 +336,9 @@ function createMainWindow(): BrowserWindow {
 
 	const {webContents} = mainWindow;
 
-	webContents.on('dom-ready', () => {
+	webContents.on('dom-ready', async () => {
+		await updateAppMenu();
+
 		webContents.insertCSS(readFileSync(path.join(__dirname, '..', 'css', 'browser.css'), 'utf8'));
 		webContents.insertCSS(readFileSync(path.join(__dirname, '..', 'css', 'dark-mode.css'), 'utf8'));
 		webContents.insertCSS(readFileSync(path.join(__dirname, '..', 'css', 'vibrancy.css'), 'utf8'));
