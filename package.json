@@ -26,6 +26,7 @@
 	},
 	"dependencies": {
 		"@types/is-online": "^8.0.0",
+		"@types/lodash.debounce": "^4.0.5",
 		"electron-context-menu": "^0.11.0",
 		"electron-debug": "^2.1.0",
 		"electron-dl": "^1.13.0",
@@ -35,8 +36,10 @@
 		"electron-updater": "^4.0.6",
 		"electron-util": "^0.11.0",
 		"element-ready": "^3.0.0",
+		"emojilib": "^2.4.0",
 		"facebook-locales": "^1.0.591",
 		"is-online": "^8.0.0",
+		"lodash.debounce": "^4.0.8",
 		"p-wait-for": "^2.0.1"
 	},
 	"devDependencies": {

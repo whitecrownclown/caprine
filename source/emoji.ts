@@ -2,6 +2,198 @@ import * as path from 'path';
 import {nativeImage, NativeImage, MenuItemConstructorOptions, Response} from 'electron';
 import config from './config';
 import {showRestartDialog} from './util';
+import emoji from 'emojilib';
+import debounce from 'lodash.debounce';
+
+const regexExpression = /(:[\w\-+]+)/g;
+
+let emojis: any = null;
+
+function load() {
+	if (!emojis) {
+		emojis = Object.entries(emoji.lib);
+	}
+
+	return emojis;
+}
+
+function exist(emojiId: string) {
+	const emojiMap = emojis;
+
+	if (!emojiMap) return null;
+
+	return emojis.filter((k: any) => k[0].includes(emojiId));
+}
+
+// Function to retrieve all the emojis that match with the search string
+function getChars(emojiId: string) {
+	const emojiMap = emojis;
+
+	if (emojiMap === null) {
+		return null;
+	}
+
+	return emojis.filter((k: any) => {
+		return k[0].indexOf(emojiId) === 0;
+	});
+}
+
+function addSearchEvent(bindElement: Node) {
+	const textInput: HTMLInputElement = document.querySelector('._5rpu');
+
+	if (!textInput) {
+		return;
+	}
+
+	load();
+
+	textInput.addEventListener('keyup', debounce((e: KeyboardEvent) => {
+		if (['Enter', 'Escape', 'ArrowRight', 'ArrowLeft'].includes(e.key) || !textInput || !textInput.textContent) {
+			return;
+		}
+
+		const lastWord: any = textInput.textContent.split(' ').pop();
+
+		parse(lastWord, bindElement);
+
+		textInput.focus();
+	}, 400));
+
+	document.addEventListener('keyup', e => {
+		const picker = document.querySelector('.emoji-menu');
+		if (picker !== null && e.key === 'Enter') {
+			e.preventDefault();
+			picker.remove();
+		}
+	});
+
+	document.addEventListener('keydown', e => {
+		const picker = document.querySelector('.emoji-menu');
+		if (picker !== null) {
+			switch (e.key) {
+				case ('Escape'): {
+					e.preventDefault();
+					picker.remove();
+					break;
+				}
+				case ('Enter'): {
+					e.preventDefault();
+					const lastword = textInput.textContent.split(' ').pop();
+					const emoji: HTMLElement = picker.querySelector('.active > .emoji').innerText;
+
+					const text = document.querySelector('[data-text="true"]');
+
+					text.innerHTML = text.innerHTML.replace(lastword, '<span>' + emoji + '</span>');
+
+					break;
+				}
+				case ('ArrowRight'): {
+					e.preventDefault();
+					const emojiSpanNext = picker.querySelector('.active');
+					if (!emojiSpanNext) return;
+
+					const nextEmoji: HTMLElement = emojiSpanNext.nextSibling;
+
+					if (nextEmoji) {
+						emojiSpanNext.className = '';
+						nextEmoji.className = 'active';
+					}
+					break;
+				}
+				case ('ArrowLeft'): {
+					e.preventDefault();
+					const emojiSpanPrev = picker.querySelector('.active');
+					if (!emojiSpanPrev) break;
+
+					const prevEmoji = emojiSpanPrev.previousSibling;
+
+					if (prevEmoji) {
+						emojiSpanPrev.className = '';
+						prevEmoji.className = 'active';
+					}
+					break;
+				}
+				default: {
+					break;
+				}
+			}
+		}
+	});
+}
+
+// Function responsible for parsing the text
+// from the message into the emoji label and search the emoji datasource
+function parse(text: string, element: Node) {
+	if (text === undefined || text === '') {
+		return;
+	}
+
+	text.replace(regexExpression, (match) => {
+		const name = match.replace(/:/g, '');
+
+		if (!exist(name)) {
+			return match;
+		}
+
+		const icons = getChars(name);
+
+		buildMenu(icons, text, element);
+	});
+}
+
+// Function to construct the emoji dropdown resultant from the search
+function buildMenu(array: any, currentText: string, element: Node) {
+	let menu = document.querySelector('.emoji-menu');
+
+	if (menu === null) {
+		menu = document.createElement('div');
+		menu.className = 'emoji-menu';
+
+		const header = document.createElement('div');
+		header.className = 'emoji-info';
+		menu.appendChild(header);
+
+		element.appendChild(menu);
+	}
+
+	let iconList = menu.querySelector('.emoji-icons');
+
+	if (!iconList) {
+		iconList = document.createElement('div');
+		iconList.className = 'emoji-icons';
+	} else {
+		while (iconList.hasChildNodes()) {
+			iconList.removeChild(iconList.lastChild);
+		}
+	}
+
+	for (const opt of array) {
+		const icon = document.createElement('div');
+		if (iconList.innerHTML === '') {
+			icon.className = 'active';
+		}
+
+		icon.innerHTML = `<span class="emoji">${opt[1].char}</span> :${opt[0]}:`;
+
+		icon.addEventListener('click', function () {
+			const text = document.querySelector('[data-text="true"]');
+			const emoji = this.querySelector('.emoji');
+
+			if (!text || !emoji) return;
+
+			text.innerHTML = text.innerHTML.replace(currentText, emoji.innerHTML + ' ');
+
+			if (menu) {
+				menu.remove();
+			}
+
+			return true;
+		});
+
+		iconList.appendChild(icon);
+	}
+	menu.appendChild(iconList);
+}
 
 // The list of emojis that aren't supported by older emoji (facebook-2-2, messenger-1-0)
 // Based on https://emojipedia.org/facebook/3.0/new/
@@ -206,6 +398,12 @@ enum EmojiStyleCode {
 	Facebook30 = 't',
 	Messenger10 = 'z',
 	Facebook22 = 'f'
+}
+
+export function setEmojiSearch() {
+	const textInput = document.querySelector('._4_j4');
+	addSearchEvent(textInput);
+	console.log('called set emoji search');
 }
 
 function codeForEmojiStyle(style: EmojiStyle): EmojiStyleCode {

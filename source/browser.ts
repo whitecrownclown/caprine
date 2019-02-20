@@ -2,6 +2,7 @@ import {ipcRenderer as ipc, Event as ElectronEvent} from 'electron';
 import elementReady from 'element-ready';
 import {api, is} from 'electron-util';
 import config from './config';
+import {setEmojiSearch} from './emoji';
 
 const listSelector = 'div[role="navigation"] > div > ul';
 const conversationSelector = '._4u-c._1wfr > ._5f0v.uiScrollableArea';
@@ -550,6 +551,8 @@ window.addEventListener('load', () => {
 			config.set('keepMeSignedIn', !config.get('keepMeSignedIn'));
 		});
 	}
+
+	setEmojiSearch();
 });
 
 // It's not possible to add multiple accelerators
