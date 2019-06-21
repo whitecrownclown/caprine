@@ -332,3 +332,13 @@ body.show-message-buttons ._4_j4 ._39bj {
 	animation-duration: 0.001s;
 	animation-name: nodeInserted;
 }
+
+/* Image previews should be contained within the conversation tab */
+._3zvs {
+	max-width: 100%;
+}
+
+._41ud [style*='height'][style*='width'] {
+	width: auto !important;
+	height: auto !important;
+}
