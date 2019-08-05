@@ -80,7 +80,11 @@ export default {
 
 		tray = new Tray(getIconPath(false));
 
-		tray.setContextMenu(contextMenu);
+		// `popUpContextMenu`, `right-click` don't work on linux
+		// This allows click events to work for macos & windows
+		if (is.linux) {
+			tray.setContextMenu(contextMenu);
+		}
 
 		updateToolTip(0);
 
