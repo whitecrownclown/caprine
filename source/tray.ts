@@ -6,6 +6,7 @@ import {toggleMenuBarMode} from './menu-bar-mode';
 
 let tray: Tray | null = null;
 let previousMessageCount = 0;
+let disableEvents = false;
 
 let contextMenu: Menu;
 
@@ -80,12 +81,14 @@ export default {
 
 		tray = new Tray(getIconPath(false));
 
-		tray.setContextMenu(contextMenu);
+		if (is.linux) {
+			tray.setContextMenu(contextMenu);
+		}
 
 		updateToolTip(0);
 
 		const trayClickHandler = (): void => {
-			if (!win.isFullScreen()) {
+			if (!win.isFullScreen() && !disableEvents) {
 				toggleWin();
 			}
 		};
@@ -93,7 +96,7 @@ export default {
 		tray.on('click', trayClickHandler);
 		tray.on('double-click', trayClickHandler);
 		tray.on('right-click', () => {
-			if (tray) {
+			if (tray && !disableEvents) {
 				tray.popUpContextMenu(contextMenu);
 			}
 		});
@@ -101,10 +104,12 @@ export default {
 
 	destroy: () => {
 		// Workaround for https://github.com/electron/electron/issues/14036
+		disableEvents = true;
 		setTimeout(() => {
 			if (tray) {
 				tray.destroy();
 				tray = null;
+				disableEvents = false;
 			}
 		}, 500);
 	},

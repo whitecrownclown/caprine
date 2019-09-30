@@ -219,7 +219,7 @@ Press Command/Ctrl+R in Caprine to see your changes.
 			}
 		},
 		{
-			label: 'Show Menu Bar Icon',
+			label: 'Enable Menu Bar Mode',
 			id: 'menuBarMode',
 			type: 'checkbox',
 			visible: is.macos,
