@@ -443,3 +443,48 @@ html.private-mode ._1htf > span:first-child {
 }
 
 /* -- BLOCK END: Small conversations window -- */
+
+/* -- BLOCK START: Extended min-width Conversation List -- */
+@media (max-width: 900px) and (min-width: 500px) {
+	._1enh._7q1s {
+		flex-basis: 240px !important;
+		min-width: 285px !important;
+	}
+
+	._1qt4._7vuo._5l-m {
+		display: flex !important;
+	}
+
+	._6-xp {
+		margin-left: auto !important;
+	}
+
+	._6-xk {
+		height: 60px !important;
+		padding-top: 10px !important;
+		justify-content: initial !important;
+	}
+
+	._1nq2._7vup {
+		display: initial !important;
+	}
+
+	._6zkc {
+		padding-left: 8px !important;
+		padding-right: 8px !important;
+	}
+
+	._7t1l {
+		justify-content: initial !important;
+	}
+
+	._1ht1 ._1qt3._6-5k {
+		margin-right: 12px !important;
+	}
+
+	._1ht1 ._2j6._6zkg {
+		display: initial !important;
+	}
+}
+
+/* -- BLOCK END: Extended min-width Conversation List -- */
