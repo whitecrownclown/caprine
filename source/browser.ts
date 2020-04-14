@@ -238,6 +238,8 @@ ipc.answerMain('toggle-mute-notifications', async (defaultStatus: boolean) => {
 		closePreferences();
 	}
 
+	config.set('notificationsMuted', !notificationCheckbox.checked);
+
 	return !notificationCheckbox.checked;
 });
 
